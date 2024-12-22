@@ -1,0 +1,20 @@
+{
+  "name": "next-pg-cache",
+  "version": "1.0.0",
+  "description": "Nextjs Postgres package to store the prerendered content and pages in postgres",
+  "main": "dist/cacheHandler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build":"tsc"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/pg": "^8.11.10",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}
