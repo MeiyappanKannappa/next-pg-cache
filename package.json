@@ -1,12 +1,17 @@
 {
   "name": "nextjs-pg-cache",
   "version": "1.0.0",
-  "description": "Nextjs Postgres package to store the prerendered content and pages in postgres",
+  "description": "Nextjs Postgres package to store the prerendered content and pages in postgres database. Optimal for containerized workload",
   "main": "dist/cacheHandler.js",
   "engines": {
     "npm": ">=8.0.0",
     "node": ">=20.0.0"
   },
+  "keywords": [
+    "nextjs",
+    "cache",
+    "postgres"
+  ],
   "scripts": {
     "test": "jest --coverage",
     "build": "tsc"
