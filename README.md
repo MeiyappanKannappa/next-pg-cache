@@ -42,10 +42,32 @@ CREATE UNLOGGED TABLE IF NOT EXISTS public.nextjs_cache (
 
 The middleware automatically caches the results of database queries executed within your Next.js application. You don't need to modify your existing code to leverage the cache.
 
-#### 4. Configuration options:
+### 4. Configuration options:
 
 cacheMaxMemorySize (optional): Controls the maximum size (in bytes) of the in-memory cache. Setting it to 0 disables the in-memory cache and relies solely on the PostgreSQL database for caching.
-5. Reporting issues:
+
+Below are required and optional env
+```
+# MANDATORY ENV
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=admin
+POSTGRES_DBNAME=postgres
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+# OPTIONAL ENV PARAMS
+CONNECTION_TIMEOUT_MILLIS= DEFAULT 0,
+IDLE_TIMEOUT_MILLIS= DEFAULT 10000,
+MAX_CONNECTIONS= DEFAULT 10,
+ALLOW_EXIT_ON_IDLE= DEFAULT false,
+
+DB_SSL_ENABLED=true
+# IF DB_SSL_ENABLED true
+CA_CRT_PATH=<CA_CERT_PATH>
+KEY_PATH=<KEY_PATH>
+CERT_PATH=<CERT_PATH>
+```
+
+### 5. Reporting issues:
 
 Please report any issues or feature requests on the GitHub repository:
 
