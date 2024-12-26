@@ -49,4 +49,4 @@ cacheMaxMemorySize (optional): Controls the maximum size (in bytes) of the in-me
 
 Please report any issues or feature requests on the GitHub repository:
 
-[[invalid URL removed]](https://github.com/MeiyappanKannappa/next-pg-cache/issues)
+[[Create Issue Here]](https://github.com/MeiyappanKannappa/next-pg-cache/issues)
