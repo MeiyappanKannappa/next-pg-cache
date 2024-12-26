@@ -1,4 +1,4 @@
-const {createTableIfNotExists, getData, setData, revalidateTag} = require('./pgclient');
+import { createTableIfNotExists, getData, setData, revalidateTag } from './pgclient';
 
 
 
@@ -12,20 +12,18 @@ module.exports = class CacheHandler {
     
   }
  
-  async get(key: any) {
-    // This could be stored anywhere, like durable storage
-    console.debug('getting cache for ',key)
+  async get(key: string) {
+
     return getData(key);
   }
  
-  async set(key: any, data: any, ctx: any) {
-    // This could be stored anywhere, like durable storage
-    console.debug('Updating cache for ',key)
+  async set(key: string, data: string, ctx: any) {
+
     setData(key, data, ctx);
   }
  
   async revalidateTag(tags: any) {
-    console.debug('revalidating cache for ',tags)
+    console.debug('Revalidating cache triggered for ',tags)
     revalidateTag(tags);
   }
 }

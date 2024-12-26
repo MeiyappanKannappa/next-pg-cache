@@ -10,26 +10,27 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const pgclient_1 = require("./pgclient");
-//(0, pgclient_1.createTableIfNotExists)();
-const CacheHandler = (options) => {
-    console.log("Options passed to cache handler ", options);
-    const get = (key) => __awaiter(void 0, void 0, void 0, function* () {
-        console.debug('getting cache for ', key);
-        return (0, pgclient_1.getData)(key);
-    });
-    const set = (key, data, ctx) => __awaiter(void 0, void 0, void 0, function* () {
-        console.debug('Updating cache for ', key);
-        (0, pgclient_1.setData)(key, data, ctx);
-    });
-    const revalidateTag = (tags) => __awaiter(void 0, void 0, void 0, function* () {
-        console.debug('revalidating cache for ', tags);
-        revalidateTag(tags);
-    });
-    return {
-        get,
-        set,
-        revalidateTag,
-    };
+module.exports = class CacheHandler {
+    constructor(options) {
+        this.options = options;
+        console.log('');
+        (() => __awaiter(this, void 0, void 0, function* () { return yield (0, pgclient_1.createTableIfNotExists)(); }))();
+    }
+    get(key) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return (0, pgclient_1.getData)(key);
+        });
+    }
+    set(key, data, ctx) {
+        return __awaiter(this, void 0, void 0, function* () {
+            (0, pgclient_1.setData)(key, data, ctx);
+        });
+    }
+    revalidateTag(tags) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.debug('Revalidating cache triggered for ', tags);
+            (0, pgclient_1.revalidateTag)(tags);
+        });
+    }
 };
-exports.default = CacheHandler;
 //# sourceMappingURL=cacheHandler.js.map

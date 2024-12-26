@@ -4,8 +4,8 @@
   "description": "Nextjs Postgres package to store the prerendered content and pages in postgres",
   "main": "dist/cacheHandler.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build":"tsc"
+    "test": "jest --coverage",
+    "build": "tsc"
   },
   "author": "",
   "license": "ISC",
@@ -14,7 +14,12 @@
     "pg": "^8.13.1"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.14",
     "@types/node": "^22.10.2",
+    "jest": "^29.7.0",
+    "pg-mock": "^1.0.1",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
   }
 }

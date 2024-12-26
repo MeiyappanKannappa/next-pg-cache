@@ -1,95 +1,99 @@
 import pg from 'pg';
-const { Client } = pg
+import * as fs from 'fs';
 const { Pool } = pg
 
 
 
-async function getPgClient() {
+export async function getPgClient() {
   const con_details = {
     user: process.env.POSTGRES_USER,
     host: process.env.POSTGRES_HOST,
     database: process.env.POSTGRES_DBNAME,
     password: process.env.POSTGRES_PASSWORD,
-    port: 5432
+    port: Number(process.env.DB_PORT) || 5432,
+    connectionTimeoutMillis: Number(process.env.CONNECTION_TIMEOUT_MILLIS) || 0,
+    idleTimeoutMillis:  Number(process.env.IDLE_TIMEOUT_MILLIS) || 10000,
+    max: Number(process.env.MAX_CONNECTIONS) || 10,
+    allowExitOnIdle: Boolean(process.env.ALLOW_EXIT_ON_IDLE) || false,
   };
-
-  return new Pool(con_details);
+  if(process.env.DB_SSL_ENABLED){
+    const ssl = {
+        rejectUnauthorized: false,
+        ca: fs.readFileSync(process.env.CA_CRT_PATH).toString(),
+        key: fs.readFileSync(process.env.KEY_PATH).toString(),
+        cert: fs.readFileSync(process.env.CERT_PATH).toString(),
+    }
+    const config = {ssl, ...con_details}
+    return new Pool(config);
+  }else{
+    const con_details = {
+      user: process.env.POSTGRES_USER,
+      host: process.env.POSTGRES_HOST,
+      database: process.env.POSTGRES_DBNAME,
+      password: process.env.POSTGRES_PASSWORD,
+      port: 5432
+    };
+    return new Pool(con_details);
+  }
+  
 }
 
- async function createTableIfNotExists() {
+
+export async function createTableIfNotExists() {
   try {
     let c = await getPgClient();
-    await c.connect(); 
     try {
-      await c.query(`
-        CREATE TABLE IF NOT EXISTS nextjs_cache (
+      const createTableQuery = `
+        CREATE UNLOGGED TABLE IF NOT EXISTS nextjs_cache (
           key TEXT PRIMARY KEY,
-          value TEXT NOT NULL, 
+          value jsonb NOT NULL, 
           last_modified BIGINT NOT NULL,
           tags TEXT[] DEFAULT NULL
         );
-      `);
+      `;
+      await c.query(createTableQuery);
       //console.log('Cache table created successfully!');
     } catch (queryError) {
-      console.error('Error executing query:', queryError);
-    } finally {
-      c.end(); 
-    }
+      console.warn('[next-pg-cache] Unable to create table:', queryError);
+    } 
   } catch (connectionError) {
-    console.error('Error connecting to the database:', connectionError);
+    console.error('[next-pg-cache] Error connecting to the database:', connectionError);
   }
 }
 
 
-async function queryDatabase() {
-  let c ;
+export async  function queryDatabase() {
+  let c: pg.Pool ;
   try {
     c = await getPgClient();
     await c.connect(); 
     const result = await c.query('SELECT Now()');
-    console.log(result.rows);
+    console.log(result?.rows);
   } catch (error) {
-    console.error('Error executing query:', error);
-  } finally {
-    // Always release the client back to the pool
-    if(c){
-      c.release();
-    }
-    
-  }
+    console.error('[next-pg-cache] Error executing query:', error);
+  } 
 }
 
-async function getData(key ) {
-  console.log("GET DATAAAAAAAAAA", key)
-  let client ;
-  console.time("Full time to get from DB")
+export async function getData(key: string) {
+  console.time(`[next-pg-cache] Time to get data from cache for key ${key}`)
   try {
     const c = await getPgClient();
-    client = await c.connect(); 
-    console.time("Just DB Query")
     const fetchQuery = `SELECT * from nextjs_cache where key='${key}'`;
     const result = await c.query(fetchQuery);
-    console.timeEnd("Just DB Query")
-    console.timeEnd("Full time to get from DB")
     return result?.rows?.[0]
   } catch (error) {
-    console.error('Error executing query:', error);
+    console.error('[next-pg-cache] Error executing query:', error);
     return
   } finally {
-    // Always release the client back to the pool
-    if(client){
-      client.release();
-    }
+    console.timeEnd(`[next-pg-cache] Time to get data from cache for key ${key}`)
     return
   }
 }
 
-async function setData(key, data, ctx) {
-  console.log("SET DATAAAAAAAAAA")
-  let client ;
+export async function setData(key: string, data: string, ctx: any) {
   try {
+    console.time(`[next-pg-cache] Time to set cache data ${key}`)
     const c = await getPgClient();
-    client = await c.connect(); 
     const lastModified = Date.now();
     const tags = ctx.tags || []; // Handle potential undefined tags
     const upsertQuery = `
@@ -101,20 +105,18 @@ async function setData(key, data, ctx) {
         last_modified = EXCLUDED.last_modified,
         tags = EXCLUDED.tags
     `;
-    console.log(upsertQuery);
     await c.query(upsertQuery, [key, JSON.stringify(data), lastModified, tags]);
-
-    console.log(`Cache entry inserted for key: ${key}`);
+    
   } catch (error) {
-    console.error('Error setting cache to postgres:', error);
+    console.error('[next-pg-cache] Error setting cache to postgres:', error);
+    return
   } finally {
-    if (client) {
-      client.release();
-    }
+    console.timeEnd(`[next-pg-cache] Time to set cache data ${key}`)
+    return
   }
 }
 
-async function revalidateTag(tags) {
+export async function revalidateTag(tags) {
   let client ;
   try {
     const c = await getPgClient();
@@ -128,19 +130,11 @@ async function revalidateTag(tags) {
       `, [tag]);
     }
 
-    console.log(`Cache entries for tags ${tags.join(', ')} invalidated.`);
+    console.log(`[next-pg-cache] Cache entries for tags ${tags.join(', ')} invalidated.`);
   } catch (error) {
-    console.error('Error revalidating cache:', error);
+    console.error('[next-pg-cache] Error revalidating cache:', error);
+    return
   } finally {
-    if (client) {
-      client.release();
-    }
+    return
   }
 }
-module.exports = {
-  createTableIfNotExists,
-  queryDatabase,
-  getData,
-  setData,
-  revalidateTag,
-};
